@@ -13,13 +13,16 @@ from datetime import datetime
 import traceback
 import configparser
 import warnings
+import logging
+import logging.config
+import yaml
 
 import praw
 from bs4 import BeautifulSoup
 import sqlite3 as lite
 
 DATABASE = 'database.sqlite'
-LOG = 'bot.log'
+LOGGER = 'cloaked_chatter'
 
 def main():
     config = configparser.ConfigParser()
@@ -28,6 +31,13 @@ def main():
     reddit = praw.Reddit(user_agent=config['Reddit']['UserAgent'])
     reddit.login(config['Reddit']['Username'], config['Reddit']['Password'])
     warnings.simplefilter("always")
+
+    loggingConf = open('configs/logging.yml', 'r')
+    logging.config.dictConfig(yaml.load(loggingConf))
+    loggingConf.close()
+    logger = logging.getLogger(LOGGER)
+
+    logger.info('Program started')
 
     news_items = get_news_items()
     for item in news_items:
@@ -38,6 +48,8 @@ def main():
             post_link(reddit, get_redirect_url(url), title)
             add_link_as_posted(url)
             break
+
+    logger.info('Program done')
 
 def get_redirect_url(url):
     """Get the URL that the given URL points to.
@@ -53,18 +65,6 @@ def get_redirect_url(url):
     warnings.simplefilter("always")
     return res.geturl()
 
-def log_event(msg):
-    """Write a message to the log file.
-
-    Args:
-        msg: Text string to be written.
-    """
-    with open(LOG, 'a') as f:
-        timestamp = str(datetime.now())[:-4]
-        string = '{0} {1}'.format(timestamp, msg)
-        f.write(string + '\n')
-        print(string)
-
 def post_link(reddit, url, title):
     """Post a link to reddit.
 
@@ -73,16 +73,12 @@ def post_link(reddit, url, title):
         url: URL to submit.
         title: Title of the link.
     """
+    logger = logging.getLogger(LOGGER)
     try:
         reddit.submit('technology', title, url=url)
-        log_event('Successfully posted `{0}` `{1}`'.format(title, url))
-    except praw.errors.APIException as e:
-        # Couldn't post the link
-        log_event("Couldn't post `{0}` `{1}`, error: {2}".format(title, url, e))
-        sys.exit(0)
+        logger.info('Successfully posted `{0}` `{1}`'.format(title, url))
     except:
-        log_event('Crashed posting `{0}` `{1}`\n{2}'
-                  .format(title, url, traceback.format_exc()))
+        logger.exception('Crashed posting `{0}` `{1}`'.format(title, url))
         sys.exit(0)
 
 def get_news_items():
@@ -125,8 +121,6 @@ def get_site(item_entry):
     return item_entry.find('div', class_='item_meta').a.next_sibling \
            .next_sibling.span.text.strip()
 
-def get_url(item
-
 def has_link_been_posted(url):
     """Check if the link has already been posted.
 
@@ -160,7 +154,8 @@ def add_link_as_posted(url):
         sql = "INSERT INTO Links (url) VALUES (?)"
         cur.execute(sql, [url])
         con.commit()
-        log_event(sql[:-2] + "'" + url + "')")
+        logger = logging.getLogger(LOGGER)
+        logger.info(sql[:-2] + "'" + url + "')")
 
 if __name__ == "__main__":
     main()
