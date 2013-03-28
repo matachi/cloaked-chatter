@@ -26,10 +26,10 @@ LOGGER = 'cloaked_chatter'
 
 def main():
     config = configparser.ConfigParser()
-    config.read('bot.cfg')
+    config.read('configs/bot.ini')
     warnings.simplefilter("ignore", category=DeprecationWarning)
-    reddit = praw.Reddit(user_agent=config['Reddit']['UserAgent'])
-    reddit.login(config['Reddit']['Username'], config['Reddit']['Password'])
+    reddit = praw.Reddit(user_agent=config['Reddit']['useragent'])
+    reddit.login(config['Reddit']['username'], config['Reddit']['password'])
     warnings.simplefilter("always")
 
     loggingConf = open('configs/logging.yml', 'r')

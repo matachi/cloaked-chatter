@@ -1,3 +1,4 @@
 *.swp
 bot.log
 database.sqlite
+configs/bot.ini

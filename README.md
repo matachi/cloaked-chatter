@@ -27,4 +27,10 @@ Setup
 
     3. Exit with `.exit`
 
-7. Update `bot.cfg` with your Reddit username and password
+7. Configure with your Reddit username and password:
+
+    1. Make a copy of `bot-sample.ini` named `bot.ini`:
+       `cd configs ; cp bot-sample.ini bot.ini`
+
+    2. Add your Reddit username and password to `bot.ini`: `vim bot.ini`
+
