@@ -14,20 +14,7 @@ Setup
 
 5. Install YAML `sudo apt-get install python3-yaml`
 
-6. Create an SQLite database and a table Links with:
-
-    1. `sqlite3 database.sqlite`
-
-    2. Create table Links:
-
-            CREATE TABLE Links (
-                url VARCHAR(50) PRIMARY KEY,
-                time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-
-    3. Exit with `.exit`
-
-7. Configure with your Reddit username and password:
+6. Configure with your Reddit username and password:
 
     1. Make a copy of bot-sample.ini named bot.ini:
        `cd configs ; cp bot-sample.ini bot.ini`

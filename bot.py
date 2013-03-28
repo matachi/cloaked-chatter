@@ -19,7 +19,7 @@ import yaml
 
 import praw
 from bs4 import BeautifulSoup
-import sqlite3 as lite
+import sqlite3 as sqlite
 
 DATABASE = 'database.sqlite'
 LOGGER = 'cloaked_chatter'
@@ -165,14 +165,30 @@ def has_link_been_posted(url):
     Returns:
         A boolean value.
     """
-    con = lite.connect(DATABASE)
+    con = sqlite.connect(DATABASE)
     with con:
         cur = con.cursor()
         sql = "SELECT COUNT() FROM Links WHERE url=?"
-        cur.execute(sql, [url])
+        try:
+            cur.execute(sql, [url])
+        except sqlite.OperationalError:
+            create_table()
+            cur.execute(sql, [url])
         con.commit()
         been_posted = cur.fetchone()[0] > 0
         return been_posted
+
+def create_table():
+    con = sqlite.connect(DATABASE)
+    cur = con.cursor()
+    sql = "CREATE TABLE Links ( \
+               url VARCHAR(50) PRIMARY KEY, \
+               time TIMESTAMP DEFAULT CURRENT_TIMESTAMP \
+           )"
+    cur.execute(sql)
+    con.commit()
+    logger = logging.getLogger(LOGGER)
+    logger.info('Created table Links')
 
 def add_link_as_posted(url, dry_run):
     """Store that the link has been posted.
@@ -184,7 +200,7 @@ def add_link_as_posted(url, dry_run):
     Returns:
         A boolean value.
     """
-    con = lite.connect(DATABASE)
+    con = sqlite.connect(DATABASE)
     with con:
         sql = "INSERT INTO Links (url) VALUES (?)"
         if not dry_run:
