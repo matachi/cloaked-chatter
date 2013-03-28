@@ -32,6 +32,8 @@ def main():
     reddit.login(config['Reddit']['username'], config['Reddit']['password'])
     warnings.simplefilter("always")
 
+    dry_run = config['Bot'].getboolean('dry-run')
+
     loggingConf = open('configs/logging.yml', 'r')
     logging.config.dictConfig(yaml.load(loggingConf))
     loggingConf.close()
@@ -39,14 +41,17 @@ def main():
 
     logger.info('Program started')
 
+    if dry_run:
+        logger.info('Running in dry run mode. Nothing will be commited')
+
     news_items = get_news_items()
     for item in news_items:
         url = item[0]
         title = item[1]
         degree = item[2]
         if not has_link_been_posted(url):
-            post_link(reddit, get_redirect_url(url), title)
-            add_link_as_posted(url)
+            post_link(reddit, get_redirect_url(url), title, dry_run)
+            add_link_as_posted(url, dry_run)
             break
 
     logger.info('Program done')
@@ -65,17 +70,20 @@ def get_redirect_url(url):
     warnings.simplefilter("always")
     return res.geturl()
 
-def post_link(reddit, url, title):
+def post_link(reddit, url, title, dry_run):
     """Post a link to reddit.
 
     Args:
         reddit: A Reddit object.
         url: URL to submit.
         title: Title of the link.
+        dry_run: If changes should be commited.
     """
     logger = logging.getLogger(LOGGER)
     try:
-        reddit.submit('technology', title, url=url)
+        if not dry_run:
+            reddit.submit('technology', title, url=url)
+            pass
         logger.info('Successfully posted `{0}` `{1}`'.format(title, url))
     except:
         logger.exception('Crashed posting `{0}` `{1}`'.format(title, url))
@@ -139,21 +147,23 @@ def has_link_been_posted(url):
         been_posted = cur.fetchone()[0] > 0
         return been_posted
 
-def add_link_as_posted(url):
+def add_link_as_posted(url, dry_run):
     """Store that the link has been posted.
 
     Args:
         url: The URL to be stored.
+        dry_run: If changes should be commited.
 
     Returns:
         A boolean value.
     """
     con = lite.connect(DATABASE)
     with con:
-        cur = con.cursor()
         sql = "INSERT INTO Links (url) VALUES (?)"
-        cur.execute(sql, [url])
-        con.commit()
+        if not dry_run:
+            cur = con.cursor()
+            cur.execute(sql, [url])
+            con.commit()
         logger = logging.getLogger(LOGGER)
         logger.info(sql[:-2] + "'" + url + "')")
 
