@@ -123,7 +123,8 @@ def get_news_items():
     return news_items
 
 def valid_site(item_entry):
-    return get_site(item_entry) != 'Mashable'
+    non_valid_sites = ('Mashable', 'Cnet', 'Gizmodo')
+    return not get_site(item_entry) in non_valid_sites
 
 def get_site(item_entry):
     return item_entry.find('div', class_='item_meta').a.next_sibling \
