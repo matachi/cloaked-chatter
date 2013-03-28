@@ -44,7 +44,7 @@ def main():
     if dry_run:
         logger.info('Running in dry run mode. Nothing will be commited')
 
-    news_items = get_news_items()
+    news_items = get_news_items(int(config['Bot']['level']))
     for item in news_items:
         url = item[0]
         title = item[1]
@@ -95,14 +95,19 @@ def post_link(reddit, url, title, dry_run):
         sys.exit(0)
     return posted
 
-def get_news_items():
+def get_news_items(level):
     """Get news items.
+
+    Args:
+        level: Specify the freshness of the news items. See bot.ini.
 
     Returns:
         A list containing tupels of url, title and degree.
     """
+    levels = {1: 'hour', 2: '6hours', 3: '', 4: '3days', 5: 'week'}
     warnings.simplefilter("ignore", category=ResourceWarning)
-    page = urllib.request.urlopen('http://techhe.at/hour')
+    page = urllib.request.urlopen('http://techhe.at/{0}' \
+                                  .format(levels.get(level)))
     warnings.simplefilter("always")
     soup = BeautifulSoup(page)
     page.close()
@@ -120,7 +125,7 @@ def get_news_items():
         # Remove \t and trim the string.
         title = item_content_link_node.text.replace('\t', '').strip()
         # If it doesn't have a title, continue to the next entry.
-        if title == 'Titel for this article is currently missing':
+        if not valid_title(title):
             continue
         # Get the next div where the degree is. Grab the degree with regex.
         degree = re.match(degree_regex,
@@ -131,6 +136,21 @@ def get_news_items():
 def valid_site(item_entry):
     non_valid_sites = ('Mashable', 'Cnet', 'Gizmodo')
     return not get_site(item_entry) in non_valid_sites
+
+def valid_title(title):
+    """Check if it's a valid news item based on its title.
+
+    Args:
+        title: The title of the news item.
+
+    Returns:
+        A boolean value.
+    """
+    valid = True
+    if re.search('^The Engadget Show', title) or \
+       title == 'Titel for this article is currently missing':
+        valid = False
+    return valid
 
 def get_site(item_entry):
     return item_entry.find('div', class_='item_meta').a.next_sibling \
