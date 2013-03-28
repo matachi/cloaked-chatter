@@ -12,7 +12,9 @@ Setup
 
 4. Install SQLite3 `sudo apt-get install sqlite3`
 
-5. Create an SQLite database and a table Links with:
+5. Install YAML `sudo apt-get install python3-yaml`
+
+6. Create an SQLite database and a table Links with:
 
     1. `sqlite3 database.sqlite`
 
@@ -25,4 +27,10 @@ Setup
 
     3. Exit with `.exit`
 
-6. Update `bot.cfg` with your Reddit username and password
+7. Configure with your Reddit username and password:
+
+    1. Make a copy of bot-sample.ini named bot.ini:
+       `cd configs ; cp bot-sample.ini bot.ini`
+
+    2. Add your Reddit username and password to bot.ini: `vim bot.ini`
+
