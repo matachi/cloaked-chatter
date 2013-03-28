@@ -50,8 +50,9 @@ def main():
         title = item[1]
         degree = item[2]
         if not has_link_been_posted(url):
-            post_link(reddit, get_redirect_url(url), title, dry_run)
             add_link_as_posted(url, dry_run)
+            if not post_link(reddit, get_redirect_url(url), title, dry_run):
+                continue
             break
 
     logger.info('Program done')
@@ -80,14 +81,19 @@ def post_link(reddit, url, title, dry_run):
         dry_run: If changes should be commited.
     """
     logger = logging.getLogger(LOGGER)
+    posted = False
     try:
         if not dry_run:
             reddit.submit('technology', title, url=url)
             pass
+        posted = True
         logger.info('Successfully posted `{0}` `{1}`'.format(title, url))
+    except praw.errors.AlreadySubmitted as e:
+        logger.info('Already been posted `{0}` `{1}`'.format(title, url))
     except:
         logger.exception('Crashed posting `{0}` `{1}`'.format(title, url))
         sys.exit(0)
+    return posted
 
 def get_news_items():
     """Get news items.
