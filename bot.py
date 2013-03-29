@@ -6,6 +6,7 @@
 """Script that posts a hot tech news item to /r/technology on Reddit.
 """
 
+import os
 import sys
 import re
 import urllib.request
@@ -25,8 +26,10 @@ DATABASE = 'database.sqlite'
 LOGGER = 'cloaked_chatter'
 
 def main():
+    path = os.path.dirname(os.path.realpath(__file__))
+
     config = configparser.ConfigParser()
-    config.read('configs/bot.ini')
+    config.read('{0}/configs/bot.ini'.format(path))
     warnings.simplefilter("ignore", category=DeprecationWarning)
     reddit = praw.Reddit(user_agent=config['Reddit']['useragent'])
     reddit.login(config['Reddit']['username'], config['Reddit']['password'])
@@ -34,7 +37,7 @@ def main():
 
     dry_run = config['Bot'].getboolean('dry-run')
 
-    loggingConf = open('configs/logging.yml', 'r')
+    loggingConf = open('{0}/configs/logging.yml'.format(path), 'r')
     logging.config.dictConfig(yaml.load(loggingConf))
     loggingConf.close()
     logger = logging.getLogger(LOGGER)
@@ -165,7 +168,8 @@ def has_link_been_posted(url):
     Returns:
         A boolean value.
     """
-    con = sqlite.connect(DATABASE)
+    path = os.path.dirname(os.path.realpath(__file__))
+    con = sqlite.connect('{0}/{1}'.format(path, DATABASE))
     with con:
         cur = con.cursor()
         sql = "SELECT COUNT() FROM Links WHERE url=?"
@@ -179,7 +183,8 @@ def has_link_been_posted(url):
         return been_posted
 
 def create_table():
-    con = sqlite.connect(DATABASE)
+    path = os.path.dirname(os.path.realpath(__file__))
+    con = sqlite.connect('{0}/{1}'.format(path, DATABASE))
     cur = con.cursor()
     sql = "CREATE TABLE Links ( \
                url VARCHAR(50) PRIMARY KEY, \
@@ -200,7 +205,8 @@ def add_link_as_posted(url, dry_run):
     Returns:
         A boolean value.
     """
-    con = sqlite.connect(DATABASE)
+    path = os.path.dirname(os.path.realpath(__file__))
+    con = sqlite.connect('{0}/{1}'.format(path, DATABASE))
     with con:
         sql = "INSERT INTO Links (url) VALUES (?)"
         if not dry_run:
