@@ -11,7 +11,6 @@ import sys
 import re
 import urllib.request
 from datetime import datetime
-import traceback
 import configparser
 import warnings
 import logging
@@ -20,7 +19,8 @@ import yaml
 
 import praw
 from bs4 import BeautifulSoup
-import sqlite3 as sqlite
+
+from history import History
 
 DATABASE = 'database.sqlite'
 LOGGER = 'cloaked_chatter'
@@ -47,13 +47,14 @@ def main():
     if dry_run:
         logger.info('Running in dry run mode. Nothing will be commited')
 
+    history = History('{0}/{1}'.format(path, DATABASE))
     news_items = get_news_items(int(config['Bot']['level']))
     for item in news_items:
         url = item[0]
         title = item[1]
         degree = item[2]
-        if not has_link_been_posted(url):
-            add_link_as_posted(url, dry_run)
+        if not history.has_link_been_posted(url):
+            history.add_link_as_posted(url, dry_run)
             if not post_link(reddit, get_redirect_url(url), title, dry_run):
                 continue
             break
@@ -158,63 +159,6 @@ def valid_title(title):
 def get_site(item_entry):
     return item_entry.find('div', class_='item_meta').a.next_sibling \
            .next_sibling.span.text.strip()
-
-def has_link_been_posted(url):
-    """Check if the link has already been posted.
-
-    Args:
-        url: The URL to be checked.
-
-    Returns:
-        A boolean value.
-    """
-    path = os.path.dirname(os.path.realpath(__file__))
-    con = sqlite.connect('{0}/{1}'.format(path, DATABASE))
-    with con:
-        cur = con.cursor()
-        sql = "SELECT COUNT() FROM Links WHERE url=?"
-        try:
-            cur.execute(sql, [url])
-        except sqlite.OperationalError:
-            create_table()
-            cur.execute(sql, [url])
-        con.commit()
-        been_posted = cur.fetchone()[0] > 0
-        return been_posted
-
-def create_table():
-    path = os.path.dirname(os.path.realpath(__file__))
-    con = sqlite.connect('{0}/{1}'.format(path, DATABASE))
-    cur = con.cursor()
-    sql = "CREATE TABLE Links ( \
-               url VARCHAR(50) PRIMARY KEY, \
-               time TIMESTAMP DEFAULT CURRENT_TIMESTAMP \
-           )"
-    cur.execute(sql)
-    con.commit()
-    logger = logging.getLogger(LOGGER)
-    logger.info('Created table Links')
-
-def add_link_as_posted(url, dry_run):
-    """Store that the link has been posted.
-
-    Args:
-        url: The URL to be stored.
-        dry_run: If changes should be commited.
-
-    Returns:
-        A boolean value.
-    """
-    path = os.path.dirname(os.path.realpath(__file__))
-    con = sqlite.connect('{0}/{1}'.format(path, DATABASE))
-    with con:
-        sql = "INSERT INTO Links (url) VALUES (?)"
-        if not dry_run:
-            cur = con.cursor()
-            cur.execute(sql, [url])
-            con.commit()
-        logger = logging.getLogger(LOGGER)
-        logger.info(sql[:-2] + "'" + url + "')")
 
 if __name__ == "__main__":
     main()
