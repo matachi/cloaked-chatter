@@ -68,6 +68,9 @@ class News():
         if re.search('^The Engadget Show', title) or \
            re.search('^Distro Issue \d{2,3}: ', title) or \
            re.search('^This Week On The TechCrunch Gadgets Podcast: ', title) or \
+           re.search("^Editor's Letter: ", title) or \
+           re.search('^Gillmor Gang Live ', title) or \
+           re.search('^Poll Technica: ', title) or \
            title == 'Titel for this article is currently missing':
             valid = False
         return valid
