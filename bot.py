@@ -18,9 +18,9 @@ import logging.config
 import yaml
 
 import praw
-from bs4 import BeautifulSoup
 
 from history import History
+from news import News
 
 DATABASE = 'database.sqlite'
 LOGGER = 'cloaked_chatter'
@@ -48,7 +48,8 @@ def main():
         logger.info('Running in dry run mode. Nothing will be commited')
 
     history = History('{0}/{1}'.format(path, DATABASE))
-    news_items = get_news_items(int(config['Bot']['level']))
+    news = News()
+    news_items = news.get_news_items(int(config['Bot']['level']))
     for item in news_items:
         url = item[0]
         title = item[1]
@@ -99,66 +100,6 @@ def post_link(reddit, url, title, dry_run):
         sys.exit(0)
     return posted
 
-def get_news_items(level):
-    """Get news items.
-
-    Args:
-        level: Specify the freshness of the news items. See bot.ini.
-
-    Returns:
-        A list containing tupels of url, title and degree.
-    """
-    levels = {1: 'hour', 2: '6hours', 3: '', 4: '3days', 5: 'week'}
-    warnings.simplefilter("ignore", category=ResourceWarning)
-    page = urllib.request.urlopen('http://techhe.at/{0}' \
-                                  .format(levels.get(level)))
-    warnings.simplefilter("always")
-    soup = BeautifulSoup(page)
-    page.close()
-    news_items = []
-    # Compile regex for getting the degree.
-    degree_regex = re.compile('^\s*([.\d]+).*')
-    # Go through all news items.
-    for entry in soup.find_all("div", class_="item"):
-        # Find the node containing the url and title.
-        item_content_link_node = entry.div.find('div', class_='item_content') \
-                                 .h3.a
-        if not valid_site(entry):
-            continue
-        url = "http://techhe.at" + item_content_link_node["href"]
-        # Remove \t and trim the string.
-        title = item_content_link_node.text.replace('\t', '').strip()
-        # If it doesn't have a title, continue to the next entry.
-        if not valid_title(title):
-            continue
-        # Get the next div where the degree is. Grab the degree with regex.
-        degree = re.match(degree_regex,
-                          entry.div.next_sibling.next_sibling.h2.text).group(1)
-        news_items.append((url, title, degree))
-    return news_items
-
-def valid_site(item_entry):
-    non_valid_sites = ('Mashable', 'Cnet', 'Gizmodo')
-    return not get_site(item_entry) in non_valid_sites
-
-def valid_title(title):
-    """Check if it's a valid news item based on its title.
-
-    Args:
-        title: The title of the news item.
-
-    Returns:
-        A boolean value.
-    """
-    valid = True
-    if re.search('^The Engadget Show', title) or \
-       title == 'Titel for this article is currently missing':
-        valid = False
-    return valid
-
-def get_site(item_entry):
-    return item_entry.find('div', class_='item_meta').a.next_sibling \
-           .next_sibling.span.text.strip()
 
 if __name__ == "__main__":
     main()
