@@ -2,3 +2,4 @@
 bot.log
 database.sqlite
 configs/bot.ini
+__pycache__

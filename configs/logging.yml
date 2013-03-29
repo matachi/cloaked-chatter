@@ -9,11 +9,9 @@ handlers:
     formatter: default
     stream: ext://sys.stdout
   file:
-    class : logging.handlers.RotatingFileHandler
+    class : logging.FileHandler
     formatter: default
     filename: bot.log
-    maxBytes: 0
-    backupCount: 0
 loggers:
   cloaked_chatter:
     level: DEBUG
