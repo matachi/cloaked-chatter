@@ -59,3 +59,10 @@ Pi with Raspbian "wheezy". A Raspberry Pi is perfect for this type of project
 considering its low energy consumption and that very little computing power is
 needed.
 
+Program arguments
+-----------------
+
+* **--level=[1,2,3,4,5]**: Specify the freshness level, see bot.ini. This
+  overrides the setting in bot.ini. Useful when scheduling multiple instances
+  of the program and you want them to run with different levels.
+

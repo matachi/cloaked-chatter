@@ -25,6 +25,15 @@ DATABASE = 'database.sqlite'
 LOGGER = 'cloaked_chatter'
 
 def main():
+
+    level = 0
+
+    # Read program arguments
+    for arg in sys.argv[1:]:
+        (param, value) = arg.split('=')
+        if param == '--level':
+            level = int(value)
+
     path = os.path.dirname(os.path.realpath(__file__))
 
     loggingConf = open('{0}/configs/logging.yml'.format(path), 'r')
@@ -48,7 +57,9 @@ def main():
     reddit = Reddit(username, password, user_agent, dry_run)
     history = History('{0}/{1}'.format(path, DATABASE))
     news = News()
-    news_items = news.get_news_items(int(config['Bot']['level']))
+    if level == 0:
+        level = int(config['Bot']['level'])
+    news_items = news.get_news_items(level)
     for item in news_items:
         url = item[0]
         title = item[1]
