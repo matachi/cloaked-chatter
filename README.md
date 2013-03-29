@@ -46,11 +46,11 @@ Schedule automatic posting
 Automatic posting can be achieved by schedule launching bot.py with cron. Add a
 cronjob with `crontab -e`. List cronjobs with `crontab -l`.
 
-Cronjob to launch the script every hour:
+Cronjob to launch the script once every hour:
 
     0 * * * * cd /home/pi/cloaked-chatter && ./bot.py
 
-Or to launch it every second hour:
+Or to launch it once every two hours:
 
     0 1-23/2 * * * cd /home/pi/cloaked-chatter && ./bot.py
 
