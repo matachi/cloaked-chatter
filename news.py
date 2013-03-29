@@ -66,6 +66,7 @@ class News():
         """
         valid = True
         if re.search('^The Engadget Show', title) or \
+           re.search('^Distro Issue \d{2,3}: ', title) or \
            title == 'Titel for this article is currently missing':
             valid = False
         return valid
