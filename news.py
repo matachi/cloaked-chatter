@@ -71,6 +71,7 @@ class News():
            re.search("^Editor's Letter: ", title) or \
            re.search('^Gillmor Gang Live ', title) or \
            re.search('^Poll Technica: ', title) or \
+           re.search('^The Daily Roundup for', title) or \
            title == 'Titel for this article is currently missing':
             valid = False
         return valid
