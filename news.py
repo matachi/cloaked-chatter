@@ -76,6 +76,7 @@ class News():
            re.search('^Backed Or Whacked: ', title) or \
            re.search('^Ask Engadget: ', title) or \
            re.search('^From idea to science: ', title) or \
+           re.search('^CrunchWeek: ', title) or \
            title == 'Titel for this article is currently missing':
             valid = False
         return valid
