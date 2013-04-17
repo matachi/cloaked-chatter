@@ -72,6 +72,11 @@ def main():
 
     logger.info('Program done')
 
+def logmaker():
+    path = os.path.dirname(os.path.realpath(__file__))
+    path = os.path.join(path, 'bot.log')
+    return logging.FileHandler(path)
+
 def get_redirect_url(url):
     """Get the URL that the given URL points to.
 

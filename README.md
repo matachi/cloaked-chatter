@@ -37,9 +37,6 @@ Launching
 
 2. Launch with `./bot.py` or `python3 bot.py`.
 
-Note, the log file will be created in the directory that the program is
-launched from.
-
 Schedule automatic posting
 --------------------------
 

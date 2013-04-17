@@ -9,9 +9,8 @@ handlers:
     formatter: default
     stream: ext://sys.stdout
   file:
-    class : logging.FileHandler
+    (): __main__.logmaker
     formatter: default
-    filename: bot.log
 loggers:
   cloaked_chatter:
     level: DEBUG
